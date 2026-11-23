@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Qué significa el cuello de botella de memoria de una GPU y cómo diagnosticarlo."><title>El problema — GPU Memory Lab</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="index.html"><span class="brand-mark">G</span><span>GPU Memory Lab</span></a><nav class="nav-links" aria-label="Navegación principal"><a href="index.html">Inicio</a><a aria-current="page" href="problema.html">El problema</a><a href="propuesta.html">Propuesta</a><a href="simulador.html">Simulador</a><a href="validacion.html">Pruebas</a><a href="revision.html">Revisión</a></nav></div></header>
+  <main>
+    <div class="page-intro"><span class="eyebrow">01 · Diagnóstico</span><h1>La GPU no siempre necesita más cálculos. A veces necesita que los datos lleguen a tiempo.</h1><p>Este límite suele llamarse <strong>cuello de botella de ancho de banda de memoria</strong> o <em>memory wall</em>. En gráficos también importa la presión de capacidad de VRAM y el movimiento de recursos entre RAM y VRAM.</p></div>
+    <div class="prose">
+      <div class="callout"><strong>Idea simple</strong><p>La GPU dibuja cada cuadro leyendo y escribiendo información: texturas, geometría, profundidad y color. Si una escena mueve demasiados bytes o excede la memoria disponible, la GPU puede esperar datos o sufrir transferencias y expulsiones de recursos.</p></div>
+      <div class="callout warning" style="margin-top:14px"><strong>¿Es un problema matemático abierto?</strong><p>No es un teorema famoso sin resolver. El nombre práctico es <em>planificación de streaming y residencia de texturas bajo un presupuesto de VRAM</em>. La parte de investigación es diseñar y medir una política mejor para casos concretos; no se puede afirmar que ya exista una solución universal.</p></div>
+      <h2>No todo problema de rendimiento es de memoria</h2>
+      <p>Antes de cambiar el cargador de texturas, hay que identificar el límite dominante. El modelo Roofline clasifica una carga según cuántas operaciones realiza por cada byte movido: algunas cargas quedan limitadas por la banda de memoria; otras, por la potencia de cálculo. El mismo equipo puede tener ambas clases de carga.</p>
+      <div class="table-wrap"><table><thead><tr><th>Tipo de límite</th><th>Señal típica</th><th>¿Ayudaría esta propuesta?</th></tr></thead><tbody>
+        <tr><td>Ancho de banda</td><td>Muchas lecturas/escrituras; el trabajo se queda esperando datos.</td><td><span class="tag green">Posiblemente</span> si la carga de texturas es relevante.</td></tr>
+        <tr><td>Capacidad de VRAM</td><td>El conjunto residente supera el presupuesto; se expulsan recursos o se usan rutas más lentas.</td><td><span class="tag green">Sí, a probar</span> con LOD y residencia selectiva.</td></tr>
+        <tr><td>Cómputo de sombreadores</td><td>El tiempo depende del coste de iluminación, efectos o sombreado por píxel.</td><td><span class="tag">Poco o nada</span> sin cambiar el sombreador.</td></tr>
+        <tr><td>CPU / sincronización</td><td>La GPU queda ociosa esperando comandos, cargas o bloqueos.</td><td><span class="tag">No necesariamente</span>; requiere otro diagnóstico.</td></tr>
+      </tbody></table></div>
+      <h2>Por qué mirar las texturas</h2>
+      <p>Una textura de alta resolución puede ocupar mucho más que el detalle visible en el cuadro. Un sistema de mips ya reduce resolución con distancia; el texturing virtual puede pedir solo mosaicos visibles. Ambos son tecnologías existentes y útiles. Aun así, tienen costes: solicitudes tardías, memoria de caché, trabajo extra de muestreo y posibles artefactos si faltan mosaicos.</p>
+      <h2>El problema medible</h2>
+      <p>La propuesta no parte de que todos los juegos estén limitados por VRAM. Busca responder una pregunta más acotada:</p>
+      <blockquote class="callout"><strong>En una escena con presupuesto de memoria limitado y cámara en movimiento, ¿se puede ordenar la carga de mips o mosaicos para reducir picos de transferencia y tirones sin degradar perceptiblemente la imagen?</strong></blockquote>
+      <h2>Fuentes técnicas</h2>
+      <ul>
+        <li><a href="https://developer.nvidia.com/blog/?p=119595">NVIDIA: Roofline y cargas limitadas por ancho de banda</a>. Explica que una carga con pocas operaciones por byte queda limitada por el movimiento de memoria.</li>
+        <li><a href="https://microsoft.github.io/DirectX-Specs/d3d/ResourceHeaps.html">DirectX: Resource Heaps</a>. Describe cómo la presión y el movimiento de memoria pueden afectar el rendimiento de renderizado.</li>
+        <li><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/streaming-virtual-texturing-in-unreal-engine">Unreal Engine: Streaming Virtual Texturing</a>. Explica el streaming por mosaicos y sus costes y limitaciones.</li>
+      </ul>
+    </div>
+  </main>
+  <footer class="footer"><span>GPU Memory Lab · Definición del problema</span><span><a href="index.html">Volver al inicio</a></span></footer>
+</body>
+</html>
+
