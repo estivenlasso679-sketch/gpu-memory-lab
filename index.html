@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Propuesta experimental para reducir transferencias de texturas y tirones en GPU con presupuesto limitado de VRAM.">
+  <title>GPU Memory Lab — Menos viajes, mismos píxeles</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header"><div class="nav-wrap">
+    <a class="brand" href="index.html"><span class="brand-mark">G</span><span>GPU Memory Lab</span></a>
+    <nav class="nav-links" aria-label="Navegación principal">
+      <a aria-current="page" href="index.html">Inicio</a><a href="problema.html">El problema</a><a href="propuesta.html">Propuesta</a><a href="simulador.html">Simulador</a><a href="validacion.html">Pruebas</a><a href="revision.html">Revisión</a>
+    </nav>
+  </div></header>
+  <main>
+    <section class="hero">
+      <div>
+        <span class="eyebrow">Propuesta abierta · gráficos 3D</span>
+        <h1>Que la GPU espere menos por los datos.</h1>
+        <p class="lede">Un planificador experimental para decidir qué detalle de textura cargar, cuándo hacerlo y qué conservar en VRAM, con el objetivo de evitar transferencias innecesarias y tirones.</p>
+        <div class="status"><span class="status-dot"></span>Versión 0.1 · simulación conceptual · falta validar en una GPU real</div>
+        <div class="actions"><a class="button" href="simulador.html">Probar el simulador <span aria-hidden="true">→</span></a><a class="button secondary" href="propuesta.html">Leer la propuesta</a></div>
+      </div>
+      <aside class="hero-panel" aria-label="Resumen del proyecto">
+        <span class="eyebrow">Hipótesis comprobable</span>
+        <p style="font-size:21px;font-weight:760;line-height:1.35;margin:13px 0 23px">Priorizar por beneficio visual por byte podría reducir picos de carga sin bajar la calidad útil en pantalla.</p>
+        <div class="metric-row"><div><div class="metric">VRAM</div><div class="metric-label">presupuesto de memoria</div></div><div><div class="metric">ms</div><div class="metric-label">tiempo de cuadro</div></div></div>
+      </aside>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><span class="eyebrow">La pregunta</span><h2>¿Qué datos necesita realmente este cuadro?</h2></div><p>En una escena 3D, algunas texturas ocupan mucha memoria aunque solo una parte aparezca en pantalla o el objeto se vea pequeño.</p></div>
+      <div class="cards">
+        <article class="card"><div class="card-icon">01</div><h3>Diagnosticar</h3><p class="muted">Primero medir si el límite es ancho de banda, capacidad de VRAM, cómputo o sincronización. Optimizar a ciegas no sirve.</p><a href="problema.html">Entender el cuello de botella →</a></article>
+        <article class="card"><div class="card-icon">02</div><h3>Priorizar</h3><p class="muted">Pedir primero los mosaicos que más mejoran la imagen visible por cada byte de transferencia, manteniendo un mip de respaldo.</p><a href="propuesta.html">Ver el algoritmo propuesto →</a></article>
+        <article class="card"><div class="card-icon">03</div><h3>Comparar</h3><p class="muted">Medir tiempo de cuadro, transferencias, ocupación de VRAM y calidad contra el streaming que ya ofrece el motor.</p><a href="validacion.html">Abrir plan de pruebas →</a></article>
+      </div>
+    </section>
+
+    <section class="section two-col">
+      <div class="callout"><strong>Qué propone este sitio</strong><p>Una política de carga adaptativa que combina nivel de detalle, probabilidad de visibilidad, memoria disponible y límite de transferencias por cuadro.</p></div>
+      <div class="callout warning"><strong>Qué no afirma</strong><p>No afirma haber inventado el texturing virtual ni haber mejorado los FPS de una GPU. Es una hipótesis de ingeniería con una simulación didáctica; falta implementar y medir en un motor real.</p></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><span class="eyebrow">Viabilidad</span><h2>Se puede probar con tecnología existente</h2></div><p>Los motores y APIs actuales ya admiten streaming de mips, texturas virtuales y recursos por páginas. El experimento se centra en la política que ordena las solicitudes.</p></div>
+      <div class="cards">
+        <article class="card"><h3>Unreal Engine</h3><p class="muted">Tiene streaming de texturas y streaming virtual por mosaicos. Permite recoger métricas de memoria y coste de virtual texturing.</p></article>
+        <article class="card"><h3>Direct3D 12</h3><p class="muted">Los recursos reservados y los recursos tiled permiten mapear y retirar mips o mosaicos según demanda.</p></article>
+        <article class="card"><h3>Vulkan</h3><p class="muted">Sparse residency permite asociar regiones de imágenes a memoria física por demanda, si el dispositivo expone la función.</p></article>
+      </div>
+      <p class="small muted" style="margin-top:14px">Fuentes: <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/streaming-virtual-texturing-in-unreal-engine">Unreal: Streaming Virtual Texturing</a>, <a href="https://learn.microsoft.com/en-us/samples/microsoft/directx-graphics-samples/d3d12-reserved-resources-sample-win32/">Microsoft: D3D12 Reserved Resources</a> y <a href="https://registry.khronos.org/vulkan/specs/latest-ratified/pdf/vkspec.pdf">Khronos: Vulkan Specification</a>.</p>
+    </section>
+
+    <section class="section callout">
+      <span class="eyebrow">Invitación a revisión</span>
+      <h2 style="margin-top:9px">Buscamos críticas antes de llamarlo una mejora.</h2>
+      <p>La pregunta clave para una persona experta es si esta política aporta algo frente a los planificadores ya usados en los motores, bajo una escena y un presupuesto de memoria reproducibles.</p>
+      <a class="button secondary" href="revision.html">Qué revisar y cómo reproducir</a>
+    </section>
+  </main>
+  <footer class="footer"><span>GPU Memory Lab · Borrador técnico abierto para revisión · 23 nov 2026</span><span>Simulación didáctica; no es un benchmark de GPU.</span></footer>
+</body>
+</html>
+
