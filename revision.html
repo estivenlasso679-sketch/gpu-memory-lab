@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Preguntas para revisión independiente de la propuesta de planificación de mips y mosaicos GPU."><title>Revisión — GPU Memory Lab</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="index.html"><span class="brand-mark">G</span><span>GPU Memory Lab</span></a><nav class="nav-links" aria-label="Navegación principal"><a href="index.html">Inicio</a><a href="problema.html">El problema</a><a href="propuesta.html">Propuesta</a><a href="simulador.html">Simulador</a><a href="validacion.html">Pruebas</a><a aria-current="page" href="revision.html">Revisión</a></nav></div></header>
+  <main>
+    <div class="page-intro"><span class="eyebrow">05 · Revisión por especialistas</span><h1>Ayúdenos a encontrar errores antes de medir.</h1><p>Este documento es una propuesta inicial. No se presenta como artículo revisado por pares ni como una mejora demostrada. La simulación es conceptual; el plugin y las mediciones de hardware están pendientes.</p></div>
+    <section class="card" style="margin-bottom:28px"><h2 style="font-size:21px">¿Quieres revisar o cuestionar la propuesta?</h2><p class="muted">Indica qué supuesto te parece incorrecto, qué trabajo previo falta citar o qué experimento permitiría distinguir la propuesta del streaming actual. Las críticas y resultados nulos también son bienvenidos.</p><div class="actions" style="margin-top:12px"><a class="button" href="https://github.com/estivenlasso679-sketch/gpu-memory-lab/issues/new">Enviar comentario técnico</a><a class="button secondary" href="https://github.com/estivenlasso679-sketch/gpu-memory-lab">Ver código y documentos</a></div></section>
+    <div class="two-col">
+      <section class="card"><h3>Para especialistas en gráficos</h3><ul class="small"><li>¿La política añade valor frente a streaming virtual existente?</li><li>¿Qué escenas y GPUs serían una prueba representativa?</li><li>¿Qué costes de lookup, page table o sincronización faltan?</li><li>¿Qué métricas capturan mejor los tirones de streaming?</li></ul></section>
+      <section class="card"><h3>Para especialistas en sistemas y algoritmos</h3><ul class="small"><li>¿El score beneficio/byte tiene una justificación útil?</li><li>¿Qué caso de thrashing o starvation puede romperlo?</li><li>¿Conviene formular la selección como knapsack, scheduling o control online?</li><li>¿Qué evidencia sería suficiente para afirmar mejora?</li></ul></section>
+    </div>
+    <div class="prose">
+      <h2>Lista de revisión técnica</h2>
+      <div class="steps">
+        <article class="step"><h3>Definición</h3><p>¿Se diferencia correctamente el ancho de banda de memoria, la capacidad de VRAM, el coste de sombreado y la sincronización?</p></article>
+        <article class="step"><h3>Estado del arte</h3><p>¿Qué sistemas existentes ya hacen predicción, prioridad perceptual o ajuste dinámico de mips? ¿Qué trabajos académicos hay que citar?</p></article>
+        <article class="step"><h3>Modelo y score</h3><p>¿La prioridad se puede calcular en línea con información disponible sin consumir más CPU/GPU de la que ahorra?</p></article>
+        <article class="step"><h3>Calidad</h3><p>¿Cómo fijar un umbral de imagen aceptable y distinguir un mip temporal de un artefacto persistente?</p></article>
+        <article class="step"><h3>Evaluación</h3><p>¿El control representa correctamente un motor moderno? ¿La ruta de cámara evita sesgo a favor del planificador?</p></article>
+      </div>
+      <h2>Fuentes iniciales para comprobar</h2>
+      <div class="source-list">
+        <article class="source"><strong><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/streaming-virtual-texturing-in-unreal-engine">Epic Games — Streaming Virtual Texturing</a></strong><p>Streaming por mosaicos, uso visible, medición de coste y limitaciones como lookup adicional y posible pop-in.</p></article>
+        <article class="source"><strong><a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/texture-streaming-overview-for-unreal-engine">Epic Games — Texture Streaming Overview</a></strong><p>Cómo Unreal decide resoluciones, mantiene un pool y ordena mips visibles y solicitudes prioritarias.</p></article>
+        <article class="source"><strong><a href="https://learn.microsoft.com/en-us/samples/microsoft/directx-graphics-samples/d3d12-reserved-resources-sample-win32/">Microsoft — D3D12 Reserved Resources Sample</a></strong><p>Ejemplo de mips que se mapean o retiran bajo demanda en un recurso tiled.</p></article>
+        <article class="source"><strong><a href="https://learn.microsoft.com/en-us/windows/win32/api/d3d12/ne-d3d12-d3d12_sampler_feedback_tier">Microsoft — D3D12 Sampler Feedback</a></strong><p>Niveles de soporte de la función que permite registrar solicitudes de muestreo por textura.</p></article>
+        <article class="source"><strong><a href="https://registry.khronos.org/vulkan/specs/latest-ratified/pdf/vkspec.pdf">Khronos — Vulkan Specification, Sparse Resources</a></strong><p>Residencia dispersa y asociaciones de memoria no contiguas, sujetas a capacidades del dispositivo.</p></article>
+        <article class="source"><strong><a href="https://doi.org/10.1145/3712285.3759895">Wang et al., SC 2025 — KAMI</a></strong><p>Ejemplo publicado de algoritmos que reorganizan cómputo y datos para reducir comunicación dentro de una GPU. Es un trabajo distinto, útil para contextualizar el enfoque.</p></article>
+        <article class="source"><strong><a href="https://developer.nvidia.com/blog/?p=119595">NVIDIA — Roofline y movimiento de memoria</a></strong><p>Explicación de por qué cargas con baja intensidad aritmética quedan limitadas por ancho de banda.</p></article>
+      </div>
+      <div class="callout" style="margin-top:22px"><strong>Solicitud de revisión</strong><p>Se agradecen críticas a la formulación, referencias que falten, casos adversos y sugerencias de benchmark. No se debe interpretar la publicación de esta propuesta como aprobación independiente.</p></div>
+    </div>
+  </main>
+  <footer class="footer"><span>GPU Memory Lab · La revisión independiente aún está pendiente.</span><span><a href="index.html">Volver al inicio</a></span></footer>
+</body>
+</html>
+
