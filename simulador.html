@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Simulación ilustrativa de carga fija de texturas frente a mips adaptativos bajo presupuesto de VRAM."><title>Simulador — GPU Memory Lab</title><link rel="stylesheet" href="styles.css"><script src="demo.js" defer></script></head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="index.html"><span class="brand-mark">G</span><span>GPU Memory Lab</span></a><nav class="nav-links" aria-label="Navegación principal"><a href="index.html">Inicio</a><a href="problema.html">El problema</a><a href="propuesta.html">Propuesta</a><a aria-current="page" href="simulador.html">Simulador</a><a href="validacion.html">Pruebas</a><a href="revision.html">Revisión</a></nav></div></header>
+  <main>
+    <div class="page-intro"><span class="eyebrow">03 · Demo interactiva</span><h1>Compara dos formas de cargar texturas.</h1><p>Mueve la cámara entre regiones y ajusta memoria y presupuesto de transferencia. La escena representa una comparación simplificada: máxima resolución para todo lo visible frente a mips ajustados a lo que ocupa cada objeto en pantalla.</p></div>
+    <div class="callout warning" style="margin-bottom:18px"><strong>Importante</strong><p>Esta página calcula una simulación en JavaScript. No accede a la GPU, no mide FPS reales y no demuestra que la política propuesta sea mejor en un motor. La carga fija a 4K es un caso de sobrecarga didáctico; no representa el planificador estándar de Unreal. El modelo también omite histéresis, predicción de cámara, compresión efectiva y costes de sincronización. Los tamaños son aproximaciones de BC7 con mips y sirven para entender el experimento, no para estimar una tarjeta real.</p></div>
+    <div class="sim-layout">
+      <section class="panel">
+        <div class="panel-head"><div><h2>Regiones visibles de la escena</h2><p class="muted small">El color representa cuán cerca está el mip residente del detalle objetivo.</p></div><span class="tag green" id="simStatus">En pausa</span></div>
+        <canvas id="sceneCanvas" class="scene-canvas" aria-label="Visualización simulada de mosaicos de textura"></canvas>
+        <div class="legend"><span><i style="background:#087e78"></i>detalle suficiente</span><span><i style="background:#d88935"></i>detalle pendiente</span><span><i style="background:#40535d"></i>solo mip de respaldo</span></div>
+        <div class="controls">
+          <div class="control"><label for="budget">Presupuesto de VRAM</label><select id="budget"><option value="256">256 MiB</option><option value="512" selected>512 MiB</option><option value="1024">1 GiB</option><option value="2048">2 GiB</option></select></div>
+          <div class="control"><label for="speed">Movimiento de cámara <output id="speedLabel">1×</output></label><input id="speed" type="range" min="1" max="3" step="1" value="1"></div>
+          <div class="control"><label for="uploadCap">Tope de subida por paso</label><select id="uploadCap"><option value="32">32 MiB</option><option value="64" selected>64 MiB</option><option value="128">128 MiB</option><option value="256">256 MiB</option></select></div>
+        </div>
+        <div class="sim-actions"><button id="playBtn" type="button">Iniciar</button><button class="secondary" id="stepBtn" type="button">Avanzar un paso</button><button class="secondary" id="resetBtn" type="button">Reiniciar</button></div>
+      </section>
+      <aside class="panel">
+        <div class="panel-head"><div><h2>Resultados simulados</h2><p class="muted small">Se actualizan a cada paso de cámara.</p></div><span class="tag" id="stepCount">0 pasos</span></div>
+        <div class="strategy-row">
+          <div class="strategy-name"><span><i class="swatch" style="background:#d88935"></i>Máxima resolución + LRU</span><span class="quality-chip" id="qualityFixed">—</span></div>
+          <div class="stat-grid"><div class="stat"><strong id="fixedMem">—</strong><span>VRAM residente</span></div><div class="stat"><strong id="fixedUpload">—</strong><span>subida del último paso</span></div></div>
+          <div class="bar-track"><div class="bar-fill gold" id="fixedBar" style="width:0"></div></div>
+        </div>
+        <div class="strategy-row">
+          <div class="strategy-name"><span><i class="swatch" style="background:#087e78"></i>Mips adaptativos + prioridad</span><span class="quality-chip" id="qualityAdaptive">—</span></div>
+          <div class="stat-grid"><div class="stat"><strong id="adaptiveMem">—</strong><span>VRAM residente</span></div><div class="stat"><strong id="adaptiveUpload">—</strong><span>subida del último paso</span></div></div>
+          <div class="bar-track"><div class="bar-fill" id="adaptiveBar" style="width:0"></div></div>
+        </div>
+        <div style="margin-top:19px"><div class="strategy-name"><span>Transferencia por paso</span><span class="small muted">MiB simulados</span></div><canvas id="chartCanvas" class="chart-canvas" aria-label="Gráfico de transferencias simuladas por paso"></canvas></div>
+        <div class="sim-note" id="readout"><strong>Qué observar:</strong> con capacidad limitada, la carga fija puede subir datos que ocupan más detalle del que el objeto muestra. Revisa también la calidad útil y no solo los MiB transferidos.</div>
+      </aside>
+    </div>
+    <section class="section two-col">
+      <div class="card"><h3>Modelo</h3><p class="muted">12 regiones, 8 materiales por región, dos regiones visibles y cinco niveles de resolución. El perfil adaptativo solicita 2K/1K/512 según un tamaño proyectado fijo; el comparador pide 4K para todos. La residencia de una textura BC7 se estima en 0,06 / 0,31 / 1,31 / 5,31 / 21,31 MiB incluyendo los mips inferiores.</p></div>
+      <div class="card"><h3>Siguiente paso real</h3><p class="muted">Llevar la política a una escena de Unreal o Direct3D 12, usar una ruta estándar como control y medir con trazas de GPU. El plan está en la página de pruebas.</p></div>
+    </section>
+  </main>
+  <footer class="footer"><span>La demo no representa mediciones de hardware ni FPS.</span><span><a href="validacion.html">Ver el plan de pruebas →</a></span></footer>
+</body>
+</html>
+
