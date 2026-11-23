@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Plan experimental reproducible para evaluar el planificador de carga de texturas en un motor y GPU reales."><title>Pruebas — GPU Memory Lab</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="index.html"><span class="brand-mark">G</span><span>GPU Memory Lab</span></a><nav class="nav-links" aria-label="Navegación principal"><a href="index.html">Inicio</a><a href="problema.html">El problema</a><a href="propuesta.html">Propuesta</a><a href="simulador.html">Simulador</a><a aria-current="page" href="validacion.html">Pruebas</a><a href="revision.html">Revisión</a></nav></div></header>
+  <main>
+    <div class="page-intro"><span class="eyebrow">04 · Evaluación</span><h1>Un resultado útil debe poder repetirse.</h1><p>La prueba principal compara el planificador con la transmisión que ya ofrece un motor, en la misma escena, recorrido y GPU. La simulación del sitio no sustituye esta medición.</p></div>
+    <div class="prose">
+      <h2>Plataforma inicial</h2>
+      <p>Ruta recomendada para el primer prototipo: una escena de Unreal Engine con Streaming Virtual Texturing activado y estadísticas de virtual texturing disponibles. Alternativa de bajo nivel: una aplicación Direct3D 12 con reserved resources y Sampler Feedback cuando la GPU soporte esa función. Vulkan sparse residency puede añadirse después, consultando soporte real del dispositivo.</p>
+      <h2>Controles y tratamientos</h2>
+      <div class="table-wrap"><table><thead><tr><th>Condición</th><th>Qué hace</th><th>Para qué sirve</th></tr></thead><tbody>
+        <tr><td>Motor base</td><td>Streaming estándar de mips, configuración predeterminada documentada.</td><td>Control práctico que una persona usuaria ya puede ejecutar.</td></tr>
+        <tr><td>Texturing virtual</td><td>Streaming por mosaicos soportado por el motor, si la escena lo permite.</td><td>Compara contra una técnica moderna existente.</td></tr>
+        <tr><td>Planificador propuesto</td><td>Prioridad por ganancia visual/byte, tope de carga y política de residencia con histéresis.</td><td>Tratamiento experimental.</td></tr>
+      </tbody></table></div>
+      <h2>Recorrido de cámara</h2>
+      <ul><li>Panorámica lenta, para medir el coste estable.</li><li>Giro rápido hacia una región nunca vista, para provocar solicitudes de detalle.</li><li>Recorrido repetido con vuelta a zonas previas, para medir reutilización y expulsiones.</li><li>Escena cercana a presupuesto de VRAM y escena que supera el presupuesto.</li></ul>
+      <h2>Métricas</h2>
+      <div class="cards">
+        <article class="card"><h3>Rendimiento</h3><p class="muted">Tiempo de cuadro p50, p95 y p99; pausas de carga; cuadros con cambio visible de mip.</p></article>
+        <article class="card"><h3>Memoria y tráfico</h3><p class="muted">VRAM pico y promedio; bytes subidos por cuadro; cola pendiente; expulsiones y recuperaciones.</p></article>
+        <article class="card"><h3>Calidad de imagen</h3><p class="muted">Captura de referencia, error de imagen por región y revisión visual ciega para detectar borrosidad, pop-in o parpadeo.</p></article>
+      </div>
+      <h2>Condiciones para declarar éxito</h2>
+      <p>Antes de medir, quienes revisen el proyecto deben acordar los umbrales de calidad y rendimiento. El criterio mínimo propuesto es: reducir una métrica de coste elegida (por ejemplo, p95 de cuadro o bytes transferidos en escenas con presión de VRAM) <strong>sin empeorar la calidad visual por encima del umbral acordado</strong>. Si no hay mejora, si sube el coste de sombreado o si aparecen artefactos, el resultado se reporta como no favorable.</p>
+      <h2>Reproducibilidad</h2>
+      <ol><li>Publicar motor, API, GPU, VRAM, controlador, resolución y parámetros.</li><li>Fijar una ruta de cámara y una versión exacta de la escena.</li><li>Calentar shaders y repetir cada escenario varias veces.</li><li>Guardar trazas, capturas, configuración y datos crudos.</li><li>Comparar distribuciones, no solo un promedio ni un cuadro elegido.</li></ol>
+      <div class="callout warning"><strong>Estado actual:</strong><p>No hay todavía un plugin de motor ni mediciones con GPU real en este proyecto. El simulador solo explica las variables que conviene registrar.</p></div>
+    </div>
+  </main>
+  <footer class="footer"><span>GPU Memory Lab · Protocolo preliminar de evaluación</span><span><a href="revision.html">Revisar los supuestos →</a></span></footer>
+</body>
+</html>
+
