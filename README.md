@@ -19,7 +19,11 @@ Abra `index.html` en un navegador. El sitio no necesita servidor, paquetes ni bi
 
 La demo es una simulación didáctica; no mide una GPU, FPS reales ni calidad visual de un juego. No se ha implementado un plugin de Unreal/Direct3D ni se han obtenido resultados experimentales. El sitio identifica esas limitaciones expresamente.
 
-## Publicación
+## Sitio público
 
-El contenido es estático y puede alojarse en GitHub Pages u otro hosting estático. Antes de afirmar que la propuesta funciona, hace falta implementar el planificador en un motor y publicar los datos comparativos.
+- Sitio: https://estivenlasso679-sketch.github.io/gpu-memory-lab/
+- Código y documentos: https://github.com/estivenlasso679-sketch/gpu-memory-lab
+- Comentarios técnicos: https://github.com/estivenlasso679-sketch/gpu-memory-lab/issues/new
+
+El sitio estático se publica desde la raíz de la rama `main`. Antes de afirmar que la propuesta funciona, hace falta implementar el planificador en un motor y publicar los datos comparativos.
 
