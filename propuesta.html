@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Propuesta técnica y algoritmo para priorizar texturas por ganancia visual por byte."><title>Propuesta — GPU Memory Lab</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <header class="site-header"><div class="nav-wrap"><a class="brand" href="index.html"><span class="brand-mark">G</span><span>GPU Memory Lab</span></a><nav class="nav-links" aria-label="Navegación principal"><a href="index.html">Inicio</a><a href="problema.html">El problema</a><a aria-current="page" href="propuesta.html">Propuesta</a><a href="simulador.html">Simulador</a><a href="validacion.html">Pruebas</a><a href="revision.html">Revisión</a></nav></div></header>
+  <main>
+    <div class="page-intro"><span class="eyebrow">02 · Diseño propuesto</span><h1>Priorizar el detalle que más se nota por cada byte.</h1><p>La contribución que se quiere probar no es inventar el streaming de texturas: es evaluar una política de solicitudes con presupuesto conjunto de VRAM y transferencia por cuadro.</p></div>
+    <div class="two-col">
+      <section class="card"><span class="tag green">Hipótesis</span><h3 style="margin-top:12px">Una lista de cargas con prioridad visual reduce picos.</h3><p class="muted">Si el motor solo puede subir una parte de los mips o mosaicos en un intervalo, conviene cargar primero lo visible, grande en pantalla y más urgente; no subir todo el detalle al mismo tiempo.</p></section>
+      <section class="card"><span class="tag">Pendiente de demostrar</span><h3 style="margin-top:12px">La política gana a los sistemas actuales.</h3><p class="muted">No sabemos todavía si el beneficio supera las políticas estándar de Unreal u otros motores. La prueba debe compararlas directamente y aceptar un resultado nulo.</p></section>
+    </div>
+    <div class="prose">
+      <h2>La puntuación de prioridad</h2>
+      <p>Para cada mip o mosaico pendiente, estimar cuánto cambia la imagen visible si se carga. Dividir esa ganancia por los bytes necesarios:</p>
+      <pre>prioridad = (área visible × urgencia × ganancia visual estimada)
+            ÷ bytes de transferencia</pre>
+      <p>La fórmula es una hipótesis inicial, no una fórmula validada. Los pesos y estimadores deben publicarse junto con los experimentos para permitir que otros los cuestionen o repliquen.</p>
+      <h2>Planificador en cinco pasos</h2>
+      <div class="steps">
+        <article class="step"><h3>Mantener un respaldo</h3><p>Conservar un mip grueso o una página de respaldo para cada recurso visible, de modo que la escena pueda dibujarse mientras llega el detalle.</p></article>
+        <article class="step"><h3>Medir necesidad en pantalla</h3><p>Estimar tamaño proyectado, visibilidad y error de textura. En Direct3D 12 se puede investigar Sampler Feedback; en motores se puede usar su información de visibilidad y streaming.</p></article>
+        <article class="step"><h3>Elegir solicitudes bajo dos presupuestos</h3><p>Respetar un límite de memoria residente y otro de bytes a subir por cuadro. Las solicitudes compiten por la ganancia visual esperada por byte.</p></article>
+        <article class="step"><h3>Reducir oscilaciones</h3><p>Usar histéresis: no subir y bajar el mismo mip por cambios mínimos entre cuadros. Proteger recursos visibles y próximos según el movimiento de cámara.</p></article>
+        <article class="step"><h3>Cargar sin detener el render</h3><p>Subir recursos por lotes asíncronos y cambiar residencia cuando las dependencias GPU lo permitan; conservar el mip de respaldo si la petición no llega a tiempo.</p></article>
+      </div>
+      <h2>Cómo elegir qué expulsar</h2>
+      <p>La política de comparación inicial será LRU, es decir, retirar primero el dato que lleva más tiempo sin usarse. La política propuesta puede puntuar el coste de reponerlo:</p>
+      <pre>coste_de_retener = probabilidad_de_uso_pronto × beneficio_visual
+                   ÷ memoria_ocupada
+
+si el presupuesto se excede:
+  degradar o expulsar el recurso con menor coste_de_retener
+  nunca retirar el respaldo de una página todavía visible</pre>
+      <p>La predicción de uso futuro es incierta. Por eso el prototipo debe comparar también una variante simple sin predicción, y medir si una predicción de cámara realmente mejora el resultado o añade complejidad.</p>
+      <h2>Encaje con APIs y motores actuales</h2>
+      <div class="cards">
+        <article class="card"><h3>Unreal Engine</h3><p class="muted">La ruta más rápida para un primer plugin: comparar el planificador con streaming de mips y Streaming Virtual Texturing; registrar las estadísticas del motor.</p></article>
+        <article class="card"><h3>Direct3D 12</h3><p class="muted">Reserved resources y tiled resources ya permiten mapear mips o tiles bajo demanda. Sampler Feedback puede informar qué detalle se muestrea si el hardware lo admite.</p></article>
+        <article class="card"><h3>Vulkan</h3><p class="muted">Sparse residency ofrece imágenes con regiones físicas no residentes, pero las funciones se consultan por dispositivo y deben tener ruta alternativa.</p></article>
+      </div>
+      <p class="small muted" style="margin-top:14px">No se propone reemplazar los sistemas maduros del motor. Se propone añadir una política comparativa y medirla sobre las mismas escenas.</p>
+      <h2>Qué podría ser nuevo</h2>
+      <p>El área de texturas virtuales y carga adaptativa ya existe. Lo que aquí se presenta para revisión es una hipótesis concreta: combinar prioridad perceptual por byte, límite de transferencia por cuadro, predicción de visibilidad con cámara y una política de expulsión que considere coste de reposición. Antes de llamarla novedosa hay que comparar literatura y sistemas existentes en detalle.</p>
+    </div>
+  </main>
+  <footer class="footer"><span>GPU Memory Lab · Diseño sujeto a revisión matemática y de sistemas</span><span><a href="simulador.html">Abrir la simulación →</a></span></footer>
+</body>
+</html>
+
